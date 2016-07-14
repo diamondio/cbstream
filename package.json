@@ -19,5 +19,12 @@
   "bugs": {
     "url": "https://github.com/diamondio/cbstream/issues"
   },
-  "homepage": "https://github.com/diamondio/cbstream#readme"
+  "homepage": "https://github.com/diamondio/cbstream#readme",
+  "devDependencies": {
+    "mock-fs": "^3.11.0",
+    "node-uuid": "^1.4.7"
+  },
+  "dependencies": {
+    "async": "^2.0.0"
+  }
 }
