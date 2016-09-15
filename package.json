@@ -1,6 +1,6 @@
 {
   "name": "cbstream",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "chunk-wise consumption of streams via callbacks",
   "main": "index.js",
   "scripts": {
