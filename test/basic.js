@@ -32,7 +32,7 @@ describe('Basic CBStream', function () {
   it('split string', function (done) {
     var stringArray = [];
     cbstream(stringToStream('abcdefghi'), 3, function (chunk, cb) {
-      stringArray.push(chunk);
+      stringArray.push(chunk.toString());
       cb(null);
     }, function (err) {
       assert.ok(!err);
@@ -44,7 +44,7 @@ describe('Basic CBStream', function () {
   it('split string with off-chunk length', function (done) {
     var stringArray = [];
     cbstream(stringToStream('abcdefgh'), 3, function (chunk, cb) {
-      stringArray.push(chunk);
+      stringArray.push(chunk.toString());
       cb(null);
     }, function (err) {
       assert.ok(!err);
@@ -56,7 +56,7 @@ describe('Basic CBStream', function () {
   it('consumer erroring should cause it not to be called again', function (done) {
     var stringArray = [];
     cbstream(stringToStream('abcdefgh'), 3, function (chunk, cb) {
-      stringArray.push(chunk);
+      stringArray.push(chunk.toString());
       cb('an_error');
     }, function (err) {
       assert.ok(err);
@@ -76,7 +76,7 @@ describe('Basic CBStream', function () {
     mystream.end();
 
     cbstream(mystream, 3, function (chunk, cb) {
-      stringArray.push(chunk);
+      stringArray.push(chunk.toString());
       cb('an_error');
     }, function (err) {
       assert.ok(err);
@@ -112,7 +112,7 @@ describe('Basic CBStream', function () {
     mystream.end();
 
     cbstream(mystream, 3, function (chunk, cb) {
-      calledConsumer = chunk;
+      calledConsumer = chunk.toString();
       cb(null);
     }, function (err) {
       assert.ok(!err);
