@@ -22,7 +22,8 @@
   "homepage": "https://github.com/diamondio/cbstream#readme",
   "devDependencies": {
     "mock-fs": "^3.11.0",
-    "node-uuid": "^1.4.7"
+    "node-uuid": "^1.4.7",
+    "string-to-stream": "^1.1.0"
   },
   "dependencies": {
     "async": "^2.0.0"

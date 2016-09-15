@@ -3,24 +3,27 @@ var async = require('async');
 module.exports = function (stream, chunksize, consumer, cb) {
   var data = '';
   var error = null;
+  var queue = async.queue(function (piece, queueCB) {
+    if (error) return queueCB();
+    consumer(piece, function (err) {
+      if (err) error = err;
+      queueCB();
+    });
+  });
+
+  queue.drain = function () {
+    stream.resume();
+  }
 
   stream.on('data', function (chunk) {
     if (error) return;
     data += chunk;
     if (data.length >= chunksize) {
       stream.pause();
-      var pieces = [];
       while (data.length >= chunksize) {
-        var piece = data.substring(0, chunksize);
-        pieces.push(data.substring(0, chunksize));
+        queue.push(data.substring(0, chunksize));
         data = data.substring(chunksize, data.length);
       }
-      async.eachSeries(pieces, function (piece, asyncCB) {
-        consumer(piece, asyncCB);
-      }, function (err) {
-        if (err) error = err;
-        stream.resume();
-      });
     }
   });
 
@@ -31,7 +34,10 @@ module.exports = function (stream, chunksize, consumer, cb) {
   stream.on('end', function() {
     if (error) return cb(error);
     if (data.length > 0) {
-      return consumer(data, cb);
+      queue.drain = function () {
+        cb(error);
+      }
+      return queue.push(data);
     }
     cb(null);
   });

@@ -1,8 +1,9 @@
 var assert     = require('assert');
 var fs         = require('fs');
-var mock       = require('mock-fs')
+//var mock       = require('mock-fs')
 var uuid       = require('node-uuid');
 var passStream = require("stream").PassThrough;
+var realStringToStream = require('string-to-stream');
 
 var cbstream = require('../index');
 
@@ -19,12 +20,12 @@ var stringToStream = function (string) {
 
 describe('Basic CBStream', function () {
   before(function (done) {
-    mock();
+    //mock();
     done();
   });
 
   after(function (done) {
-    mock.restore();
+    //mock.restore();
     done();
   });
 
@@ -116,6 +117,96 @@ describe('Basic CBStream', function () {
     }, function (err) {
       assert.ok(!err);
       assert.ok(calledConsumer === 'a');
+      done();
+    })
+  });
+
+  it('Really big stream', function (done) {
+    var calledConsumer = false;
+    var string = '';
+    for (var i = 0; i < 10000; i++) {
+      string += 'asdfjkhasdfkhsfkjhasdkfjhaksdjgfh';
+    }
+
+    cbstream(stringToStream(string), 10 * 1024 * 1024, function (chunk, cb) {
+      calledConsumer = true;
+      cb(null);
+    }, function (err) {
+      assert.ok(!err);
+      assert.ok(calledConsumer);
+      done();
+    })
+  });
+
+  it('Really big stream with small chunks', function (done) {
+    var calledConsumer = false;
+    var string = '';
+    for (var i = 0; i < 10000; i++) {
+      string += 'asdfjkhasdfkhsfkjhasdkfjhaksdjgfh';
+    }
+    var len = 0;
+
+    cbstream(stringToStream(string), 1024, function (chunk, cb) {
+      calledConsumer = true;
+      len += chunk.length;
+      cb(null);
+    }, function (err) {
+      assert.ok(!err);
+      assert.ok(calledConsumer);
+      assert.ok(len === string.length);
+      done();
+    })
+  });
+
+  it('Really big stream with small chunks and ensure no overlap', function (done) {
+    var calledConsumer = false;
+    var string = '';
+    for (var i = 0; i < 10000; i++) {
+      string += 'asdfjkhasdfkhsfkjhasdkfjhaksdjgfh';
+    }
+    var len = 0;
+    var running = false;
+
+    cbstream(stringToStream(string), 10 * 1024, function (chunk, cb) {
+      assert.ok(!running);
+      running = true;
+      calledConsumer = true;
+      len += chunk.length;
+      setTimeout(function () {
+        running = false;
+        cb(null);
+      }, 2);
+    }, function (err) {
+      assert.ok(!err);
+      assert.ok(calledConsumer);
+      assert.ok(len === string.length);
+      done();
+    })
+  });
+
+
+  it('Really big stream with string-to-stream, small chunks and ensure no overlap', function (done) {
+    var calledConsumer = false;
+    var string = '';
+    for (var i = 0; i < 10000; i++) {
+      string += 'asdfjkhasdfkhsfkjhasdkfjhaksdjgfh';
+    }
+    var len = 0;
+    var running = false;
+
+    cbstream(realStringToStream(string), 10 * 1024, function (chunk, cb) {
+      assert.ok(!running);
+      running = true;
+      calledConsumer = true;
+      len += chunk.length;
+      setTimeout(function () {
+        running = false;
+        cb(null);
+      }, 2);
+    }, function (err) {
+      assert.ok(!err);
+      assert.ok(calledConsumer);
+      assert.ok(len === string.length);
       done();
     })
   });
